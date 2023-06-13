@@ -12,7 +12,7 @@ In your gihub action workflow, you can add a step:
 ```
   steps:
       - id: start_desktop
-        uses: docker/desktop-action/start@v0.0.1
+        uses: docker/desktop-action/start@v0.1.0
 ```
 
 After this step executes, Docker Desktop is ready and available, the docker CLI can be executed in subsequent "run" steps
