@@ -32,7 +32,6 @@ runs:
       shell: bash
       run: |
         echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
-        cat /etc/hosts
 
     - name: Copy Desktop install settings in /Library
       if: steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
@@ -83,3 +82,4 @@ runs:
       run: |
         until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
         echo "Docker started and ready"
+        docker version
