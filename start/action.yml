@@ -170,7 +170,8 @@ runs:
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
-        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
+        docker info || true
+        until docker info; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
         echo "Docker started and ready"
         docker version
 
@@ -178,3 +179,7 @@ runs:
       if: ${{ failure() }}
       shell: bash
       run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}
