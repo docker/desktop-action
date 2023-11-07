@@ -169,7 +169,6 @@ runs:
 
     - name: Wait for Docker to be up and running
       shell: bash
-      timeout-minutes: 5
       run: |
         until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
         echo "Docker started and ready"
@@ -177,4 +176,5 @@ runs:
 
     - name: Gather Diagnostics
       if: ${{ failure() }}
+      shell: bash
       run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
