@@ -7,10 +7,18 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Start Desktop
-        run: echo Hello Desktop
+        uses: ./start
+
+      - name: Debug
+        run: |
+          ls -al ~/Library/Containers/com.docker.docker || true
+          docker ps -a || true
+
+      - name: Desktop version
+        run: docker info
