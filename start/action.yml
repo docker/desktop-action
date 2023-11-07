@@ -77,6 +77,10 @@ runs:
         /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
         echo "Docker starting..."
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
+
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
