@@ -171,15 +171,24 @@ runs:
       shell: bash
       run: |
         docker info || true
-        until docker info; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
+        sleep 10 
+        docker info || true
+        sleep 10 
+        docker info || true
+        sleep 10 
+        docker info || true
+        sleep 10 
+        docker info || true
+        sleep 10 
+        docker info || true
+        sleep 10 
+        docker info || true
         echo "Docker started and ready"
         docker version
 
     - name: Gather Diagnostics
-      if: ${{ failure() }}
       shell: bash
       run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ failure() }}
