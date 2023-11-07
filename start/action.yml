@@ -21,15 +21,15 @@ runs:
         echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
       shell: bash
 
-#    - name: Get macOS Docker app cache
-#      if: runner.os == 'macOS'
-#      id: cache-docker-desktop-app
-#      uses: actions/cache@v3
-#      env:
-#        cache-name: cache-docker-desktop-app
-#      with:
-#        path: /Applications/Docker.app
-#        key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
+    - name: Get macOS Docker app cache
+      if: runner.os == 'macOS'
+      id: cache-docker-desktop-app
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-docker-desktop-app
+      with:
+        path: /Applications/Docker.app
+        key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
 
     - name: Get macOS Docker install settings cache
       id: cache-docker-desktop-install-settings
@@ -66,15 +66,26 @@ runs:
         sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license --user runner
         echo "dmg installed"
 
+        /usr/bin/hdiutil detach ./mount/desktop
+        echo "dmg unmounted"
+
+    - name: Install Docker Desktop from cache
+      if: steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        sudo mkdir /Library/PrivilegedHelperTools
+        sudo /Applications/Docker.app/Contents/MacOS/install --accept-license --user runner
+
+    # todo (ben): check if that is really useful
+    - name: Copy Docker Desktop settings for caching
+      shell: bash
+      run: |
         echo "ls /Library/Application Support/com.docker.docker"
         ls "/Library/Application Support/com.docker.docker" || true
         mkdir -p ./cache/desktopInstallSettings
         cp "/Library/Application Support/com.docker.docker/"* ./cache/desktopInstallSettings/
         echo "ls ./cache/desktopInstallSettings/"
         ls ./cache/desktopInstallSettings/ || true
-
-        /usr/bin/hdiutil detach ./mount/desktop
-        echo "dmg unmounted"
 
     - name: Start Docker Desktop app
       if: runner.os == 'macOS'
