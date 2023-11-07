@@ -21,15 +21,15 @@ runs:
         echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
       shell: bash
 
-    - name: Get macOS Docker app cache
-      id: cache-docker-desktop-app
-      if: runner.os == 'macOS'
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-docker-desktop-app
-      with:
-        path: /Applications/Docker.app
-        key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
+#    - name: Get macOS Docker app cache
+#      if: runner.os == 'macOS'
+#      id: cache-docker-desktop-app
+#      uses: actions/cache@v3
+#      env:
+#        cache-name: cache-docker-desktop-app
+#      with:
+#        path: /Applications/Docker.app
+#        key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
 
     - name: Get macOS Docker install settings cache
       id: cache-docker-desktop-install-settings
