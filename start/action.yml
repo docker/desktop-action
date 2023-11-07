@@ -186,13 +186,6 @@ runs:
         echo "Docker started and ready"
         docker version
 
-#    - name: Wait for Docker to be up and running
-#      shell: bash
-#      run: |
-#        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
-#        echo "Docker started and ready"
-#        docker version
-
 #    - name: Gather Diagnostics
 #      if: ${{ failure() }}
 #      shell: bash
