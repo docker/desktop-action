@@ -62,7 +62,8 @@ runs:
         wget -q -O ./temp/DockerDesktop.dmg https://desktop.docker.com/mac/main/amd64/Docker.dmg
         /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
         echo "dmg mounted"
-        sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license
+        sudo mkdir /Library/PrivilegedHelperTools
+        sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license --user runner
         echo "dmg installed"
 
         echo "ls /Library/Application Support/com.docker.docker"
@@ -75,15 +76,11 @@ runs:
         /usr/bin/hdiutil detach ./mount/desktop
         echo "dmg unmounted"
 
-    - name: Install macOS Docker Desktop app
+    - name: Start Docker Desktop app
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        sudo mkdir /Library/PrivilegedHelperTools
-        sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
-        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
-        echo "app installed"
-        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
+        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
         echo "Docker starting..."
 
     - name: Download appcast
