@@ -53,7 +53,7 @@ runs:
         ls "/Library/Application Support/com.docker.docker/"
 
     - name: Install macOS Docker Desktop dmg
-      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit != 'true'
+      if: runner.os == 'macOS' && steps.cache-docker-desktop-app.outputs.cache-hit != 'true'
       shell: bash
       run: |
         sw_vers
@@ -69,8 +69,8 @@ runs:
         /usr/bin/hdiutil detach ./mount/desktop
         echo "dmg unmounted"
 
-    - name: Install Docker Desktop from cache
-      if: steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
+    - name: Install macOS Docker Desktop from cache
+      if: runner.os == 'macOS' && steps.cache-docker-desktop-app.outputs.cache-hit == 'true'
       shell: bash
       run: |
         sudo mkdir /Library/PrivilegedHelperTools
@@ -78,6 +78,7 @@ runs:
 
     # todo (ben): check if that is really useful
     - name: Copy Docker Desktop settings for caching
+      if: runner.os == 'macOS'
       shell: bash
       run: |
         echo "ls /Library/Application Support/com.docker.docker"
