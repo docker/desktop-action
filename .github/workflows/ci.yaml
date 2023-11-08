@@ -6,11 +6,20 @@ on:
   pull_request:
 
 jobs:
-  test:
+  test-docker-desktop:
+    name: test-docker-desktop
     runs-on: ubuntu-latest
-
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
       - name: Start Desktop
-        run: echo Hello Desktop
+        uses: ./start
+        timeout-minutes: 5
+
+      - name: Docker Desktop info
+        run: docker info
+
+      - name: Gather Diagnostics
+        if: ${{ failure() }}
+        run: /opt/docker-desktop/bin/com.docker.diagnose gather -upload
