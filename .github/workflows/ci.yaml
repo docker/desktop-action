@@ -23,6 +23,14 @@ jobs:
         with:
           docker-desktop-build-url: ${{ matrix.build-url }}
 
+      - name: Gather Diagnostics
+        if: ${{ always() }}
+        run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3
+
       - name: Docker Desktop version
         run: docker version >> $GITHUB_STEP_SUMMARY
 

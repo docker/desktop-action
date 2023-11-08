@@ -88,12 +88,12 @@ runs:
         echo "ls ./cache/desktopInstallSettings/"
         ls ./cache/desktopInstallSettings/ || true
 
-#    - name: Start Docker Desktop app
-#      if: runner.os == 'macOS'
-#      shell: bash
-#      run: |
-#        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
-#        echo "Docker starting..."
+    - name: Start Docker Desktop app
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
+        echo "Docker starting..."
 
     - name: Download appcast
       if: runner.os == 'Linux'
@@ -182,17 +182,17 @@ runs:
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
 
-#    - name: Wait for Docker to be up and running
-#      shell: bash
-#      run: |
-#        docker ps || true
-#        sleep 10
-#        docker ps || true
-#        sleep 10
-#        docker ps || true
-#        sleep 10
-#        docker ps || true
-#        sleep 10
+    - name: Wait for Docker to be up and running
+      shell: bash
+      run: |
+        docker ps || true
+        sleep 10
+        docker ps || true
+        sleep 10
+        docker ps || true
+        sleep 10
+        docker ps || true
+        sleep 10
 
 #        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
 #        echo "Docker started and ready"
