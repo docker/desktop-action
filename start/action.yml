@@ -100,7 +100,9 @@ runs:
     - name: Check for CPU with VM support
       if: runner.os == 'Linux'
       shell: bash
-      run: egrep '(vmx|svm)' /proc/cpuinfo
+      run: |
+        cat /proc/cpuinfo
+        egrep '(vmx|svm)' /proc/cpuinfo || true
 
     # https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
     - name: Enable KVM group perms
