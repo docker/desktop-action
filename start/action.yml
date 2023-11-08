@@ -3,14 +3,22 @@ description: "Start Docker Desktop on a Github Action node"
 runs:
   using: "composite"
   steps:
+    - name: Bloc calls to segment.io
+      id: redirect-segment
+      shell: bash
+      run: |
+        echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
+
     - name: Get Date
+      if: runner.os == 'macOS'
       id: get-date
       run: |
         echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
       shell: bash
 
-    - name: Get Docker app cache
+    - name: Get macOS Docker app cache
       id: cache-docker-desktop-app
+      if: runner.os == 'macOS'
       uses: actions/cache@v3
       env:
         cache-name: cache-docker-desktop-app
@@ -18,7 +26,7 @@ runs:
         path: /Applications/Docker.app
         key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
 
-    - name: Get Docker install settings cache
+    - name: Get macOS Docker install settings cache
       id: cache-docker-desktop-install-settings
       uses: actions/cache@v3
       env:
@@ -27,14 +35,8 @@ runs:
         path: ./cache/desktopInstallSettings/
         key: docker-desktop-install-settings-mac-${{ steps.get-date.outputs.date }}
 
-    - name: Bloc calls to segment.io
-      id: redirect-segment
-      shell: bash
-      run: |
-        echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
-
-    - name: Copy Desktop install settings in /Library
-      if: steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
+    - name: Copy macOS Desktop install settings in /Library
+      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
       shell: bash
       run: |
         echo "ls ./cache/desktopInstallSettings/"
@@ -44,8 +46,8 @@ runs:
         echo "/Library/Application Support/com.docker.docker/"
         ls "/Library/Application Support/com.docker.docker/"
 
-    - name: Install Docker Desktop dmg
-      if: steps.cache-docker-desktop-install-settings.outputs.cache-hit != 'true'
+    - name: Install macOS Docker Desktop dmg
+      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit != 'true'
       shell: bash
       run: |
         sw_vers
@@ -67,7 +69,8 @@ runs:
         /usr/bin/hdiutil detach ./mount/desktop
         echo "dmg unmounted"
 
-    - name: Install Docker Desktop app
+    - name: Install macOS Docker Desktop app
+      if: runner.os == 'macOS'
       shell: bash
       run: |
         sudo mkdir /Library/PrivilegedHelperTools
@@ -76,6 +79,64 @@ runs:
         echo "app installed"
         /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
         echo "Docker starting..."
+
+    - name: Cache Docker Desktop packages
+      if: runner.os == 'Linux'
+      id: cache-docker-desktop
+      uses: actions/cache@v3
+      with:
+        key: "docker-desktop-4.25.0-amd64"
+        path: |
+          ~/downloads/
+
+    - name: Download Docker Desktop
+      if: runner.os == 'Linux' && ${{ steps.cache-docker-desktop.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        mkdir -p ~/.downloads
+        curl -sSL https://desktop.docker.com/linux/main/amd64/docker-desktop-4.25.0-amd64.deb > ~/.downloads/docker-desktop.deb
+
+    - name: Check for CPU with VM support
+      if: runner.os == 'Linux'
+      shell: bash
+      run: egrep '(vmx|svm)' /proc/cpuinfo
+
+    # https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
+    - name: Enable KVM group perms
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: Install and Run Docker Desktop
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo add-apt-repository universe
+        sudo apt update -y
+        sudo apt-get install ca-certificates curl gnupg
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+        echo \
+          "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt update -y
+        sudo apt remove moby-cli moby-compose moby-buildx
+        sudo apt install qemu-kvm
+        sudo apt install ~/.downloads/docker-desktop.deb qemu-kvm
+        mkdir -p ~/.docker/desktop
+        echo '{"settingsVersion": 30, "licenseTermsVersion": 2}' > ~/.docker/desktop/settings.json
+        docker context create desktop-linux --docker host=unix://${HOME}/.docker/desktop/docker.sock --description "Docker Desktop"
+        docker context use desktop-linux
+
+        systemctl --user start docker-desktop
+
+        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
+        echo "Docker started and ready"
 
     - name: Wait for Docker to be up and running
       shell: bash
