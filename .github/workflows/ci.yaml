@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest] #, macos-latest ]
+        os: [ ubuntu22_16cores_64gb ] #, macos-latest ]
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
