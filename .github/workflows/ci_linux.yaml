@@ -8,7 +8,7 @@ on:
 jobs:
   test-docker-desktop:
     name: test-docker-desktop
-    runs-on: ubuntu22_16cores_64gb
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Cache Docker Desktop packages
