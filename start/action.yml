@@ -28,6 +28,7 @@ runs:
 
     - name: Get macOS Docker install settings cache
       id: cache-docker-desktop-install-settings
+      if: runner.os == 'macOS'
       uses: actions/cache@v3
       env:
         cache-name: cache-docker-desktop-install-settings
