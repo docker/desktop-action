@@ -7,8 +7,11 @@ on:
 
 jobs:
   test-docker-desktop:
-    name: test-docker-desktop
-    runs-on: ubuntu-latest
+    name: Test Docker Desktop installation and start
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest] #, macos-latest ]
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
