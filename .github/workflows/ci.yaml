@@ -6,11 +6,23 @@ on:
   pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-
+  test-docker-desktop:
+    name: Test Docker Desktop installation and start
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest] #, macos-latest ]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
       - name: Start Desktop
-        run: echo Hello Desktop
+        uses: ./start
+        timeout-minutes: 5
+
+      - name: Docker Desktop info
+        run: docker info
+
+      - name: Gather Diagnostics
+        if: ${{ failure() }}
+        run: /opt/docker-desktop/bin/com.docker.diagnose gather -upload
