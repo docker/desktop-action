@@ -1,5 +1,10 @@
 name: "Docker Desktop action"
 description: "Start Docker Desktop on a Github Action node"
+inputs:
+  docker-desktop-build-url:
+    description: "Docker Desktop build url to use for installation"
+    required: false
+    default: "latest"
 runs:
   using: "composite"
   steps:
@@ -81,6 +86,31 @@ runs:
         /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
         echo "Docker starting..."
 
+    - name: Download appcast
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        curl https://desktop.docker.com/linux/main/amd64/appcast.xml -o appcast.xml
+
+    - name: Get Docker Desktop latest build url
+      if: runner.os == 'Linux' && inputs.docker-desktop-build-url == 'latest'
+      uses: mavrosxristoforos/get-xml-info@1.1.1
+      id: get-latest-build-url
+      with:
+        xml-file: appcast.xml
+        xpath: //channel/link
+
+    - name: Define the build URL to use
+      if: runner.os == 'Linux'
+      id: get-build-url
+      shell: bash
+      run: |
+        buildUrl=${{ inputs.docker-desktop-build-url }}
+        if [[ "$buildUrl" == "latest" ]]; then
+          buildUrl=${{ steps.get-latest-build-url.outputs.info }}
+        fi
+        echo "build-url=$buildUrl" >> $GITHUB_OUTPUT
+
     - name: Cache Docker Desktop packages
       if: runner.os == 'Linux'
       id: cache-docker-desktop
@@ -95,7 +125,7 @@ runs:
       shell: bash
       run: |
         mkdir -p ~/.downloads
-        curl -sSL https://desktop.docker.com/linux/main/amd64/docker-desktop-4.25.0-amd64.deb > ~/.downloads/docker-desktop.deb
+        curl -sSL ${{ steps.get-build-url.outputs.build-url }} > ~/.downloads/docker-desktop.deb
 
     - name: Check for CPU with VM support
       if: runner.os == 'Linux'
