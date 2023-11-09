@@ -12,13 +12,16 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu22_16cores_64gb ] #, macos-latest ]
-    timeout-minutes: 20
+#    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
       - name: Start Desktop
         uses: ./start
         timeout-minutes: 5
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Docker Desktop info
         run: docker info
