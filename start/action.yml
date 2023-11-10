@@ -1,29 +1,16 @@
 name: "Docker Desktop action"
 description: "Start Docker Desktop on a Github Action node"
-inputs:
-  docker-desktop-build-url:
-    description: "Docker Desktop build url to use for installation"
-    required: false
-    default: "latest"
 runs:
   using: "composite"
   steps:
-    - name: Bloc calls to segment.io
-      id: redirect-segment
-      shell: bash
-      run: |
-        echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
-
     - name: Get Date
-      if: runner.os == 'macOS'
       id: get-date
       run: |
         echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
       shell: bash
 
-    - name: Get macOS Docker app cache
+    - name: Get Docker app cache
       id: cache-docker-desktop-app
-      if: runner.os == 'macOS'
       uses: actions/cache@v3
       env:
         cache-name: cache-docker-desktop-app
@@ -31,9 +18,8 @@ runs:
         path: /Applications/Docker.app
         key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
 
-    - name: Get macOS Docker install settings cache
+    - name: Get Docker install settings cache
       id: cache-docker-desktop-install-settings
-      if: runner.os == 'macOS'
       uses: actions/cache@v3
       env:
         cache-name: cache-docker-desktop-install-settings
@@ -41,8 +27,14 @@ runs:
         path: ./cache/desktopInstallSettings/
         key: docker-desktop-install-settings-mac-${{ steps.get-date.outputs.date }}
 
-    - name: Copy macOS Desktop install settings in /Library
-      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
+    - name: Bloc calls to segment.io
+      id: redirect-segment
+      shell: bash
+      run: |
+        echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
+
+    - name: Copy Desktop install settings in /Library
+      if: steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
       shell: bash
       run: |
         echo "ls ./cache/desktopInstallSettings/"
@@ -52,8 +44,8 @@ runs:
         echo "/Library/Application Support/com.docker.docker/"
         ls "/Library/Application Support/com.docker.docker/"
 
-    - name: Install macOS Docker Desktop dmg
-      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit != 'true'
+    - name: Install Docker Desktop from dmg
+      if: steps.cache-docker-desktop-app.outputs.cache-hit != 'true'
       shell: bash
       run: |
         sw_vers
@@ -62,9 +54,23 @@ runs:
         wget -q -O ./temp/DockerDesktop.dmg https://desktop.docker.com/mac/main/amd64/Docker.dmg
         /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
         echo "dmg mounted"
-        sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license
+        sudo mkdir /Library/PrivilegedHelperTools
+        sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license --user runner
         echo "dmg installed"
 
+        /usr/bin/hdiutil detach ./mount/desktop
+        echo "dmg unmounted"
+
+    - name: Install Docker Desktop from cache
+      if: steps.cache-docker-desktop-app.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        sudo mkdir /Library/PrivilegedHelperTools
+        sudo /Applications/Docker.app/Contents/MacOS/install --accept-license --user runner
+
+    - name: Copy Docker Desktop settings for caching
+      shell: bash
+      run: |
         echo "ls /Library/Application Support/com.docker.docker"
         ls "/Library/Application Support/com.docker.docker" || true
         mkdir -p ./cache/desktopInstallSettings
@@ -72,107 +78,31 @@ runs:
         echo "ls ./cache/desktopInstallSettings/"
         ls ./cache/desktopInstallSettings/ || true
 
-        /usr/bin/hdiutil detach ./mount/desktop
-        echo "dmg unmounted"
+    #    - name: Setup tmate session
+    #      uses: mxschmitt/action-tmate@v3
 
-    - name: Install macOS Docker Desktop app
-      if: runner.os == 'macOS'
+    - name: Start Docker Desktop app
       shell: bash
       run: |
-        sudo mkdir /Library/PrivilegedHelperTools
-        sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
-        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
-        echo "app installed"
-        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
+        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
         echo "Docker starting..."
-
-    - name: Download appcast
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        curl https://desktop.docker.com/linux/main/amd64/appcast.xml -o appcast.xml
-
-    - name: Get Docker Desktop latest build url
-      if: runner.os == 'Linux' && inputs.docker-desktop-build-url == 'latest'
-      uses: mavrosxristoforos/get-xml-info@1.1.1
-      id: get-latest-build-url
-      with:
-        xml-file: appcast.xml
-        xpath: //channel/link
-
-    - name: Define the build URL to use
-      if: runner.os == 'Linux'
-      id: get-build-url
-      shell: bash
-      run: |
-        buildUrl=${{ inputs.docker-desktop-build-url }}
-        if [[ "$buildUrl" == "latest" ]]; then
-          buildUrl=${{ steps.get-latest-build-url.outputs.info }}
-        fi
-        echo "build-url=$buildUrl" >> $GITHUB_OUTPUT
-
-    - name: Cache Docker Desktop packages
-      if: runner.os == 'Linux'
-      id: cache-docker-desktop
-      uses: actions/cache@v3
-      with:
-        key: "docker-desktop-4.25.0-amd64"
-        path: |
-          ~/downloads/
-
-    - name: Download Docker Desktop
-      if: runner.os == 'Linux' && ${{ steps.cache-docker-desktop.outputs.cache-hit != 'true' }}
-      shell: bash
-      run: |
-        mkdir -p ~/.downloads
-        curl -sSL ${{ steps.get-build-url.outputs.build-url }} > ~/.downloads/docker-desktop.deb
-
-    - name: Check for CPU with VM support
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        egrep '(vmx|svm)' /proc/cpuinfo
-
-    # https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
-    - name: Enable KVM group perms
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-        sudo udevadm control --reload-rules
-        sudo udevadm trigger --name-match=kvm
-
-    - name: Install and Run Docker Desktop
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        sudo add-apt-repository universe
-        sudo apt update -y
-        sudo apt-get install ca-certificates curl gnupg
-        sudo install -m 0755 -d /etc/apt/keyrings
-        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-        sudo chmod a+r /etc/apt/keyrings/docker.gpg
-        echo \
-          "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-        sudo apt update -y
-        sudo apt remove moby-cli moby-compose moby-buildx
-        sudo apt install qemu-kvm
-        sudo apt install ~/.downloads/docker-desktop.deb qemu-kvm
-        mkdir -p ~/.docker/desktop
-        echo '{"settingsVersion": 30, "licenseTermsVersion": 2}' > ~/.docker/desktop/settings.json
-        docker context create desktop-linux --docker host=unix://${HOME}/.docker/desktop/docker.sock --description "Docker Desktop"
-        docker context use desktop-linux
-
-        systemctl --user start docker-desktop
-
-        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
-        echo "Docker started and ready"
-
+    #
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
-        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
-        echo "Docker started and ready"
-        docker version
+        sleep 30
+        docker ps || true
+        sleep 10
+        docker ps || true
+        sleep 10
+        docker ps || true
+        sleep 10
+        docker ps || true
+
+    #        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
+    #        echo "Docker started and ready"
+    #        docker version
+
+    - name: Gather Diagnostics
+      shell: bash
+      run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
