@@ -90,7 +90,6 @@ runs:
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
-        sleep 30
         docker ps || true
         sleep 10
         docker ps || true
