@@ -121,7 +121,7 @@ runs:
           ~/downloads/
 
     - name: Download Docker Desktop
-      if: runner.os == 'Linux' && ${{ steps.cache-docker-desktop.outputs.cache-hit != 'true' }}
+      if: runner.os == 'Linux' && steps.cache-docker-desktop.outputs.cache-hit != 'true'
       shell: bash
       run: |
         mkdir -p ~/.downloads
