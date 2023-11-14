@@ -191,6 +191,16 @@ runs:
 #        echo "Docker started and ready"
 #        docker version
 
+    - name: take a screenshot
+      shell: bash
+      run: screencapture screenshot.jpg
+
+    - name: Upload screenshot
+      uses: actions/upload-artifact@v3
+      with:
+        name: screenshot
+        path: screenshot.jpg
+
     - name: Gather Diagnostics
       shell: bash
       if: ${{ failure() }}
