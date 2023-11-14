@@ -88,12 +88,12 @@ runs:
         echo "ls ./cache/desktopInstallSettings/"
         ls ./cache/desktopInstallSettings/ || true
 
-#    - name: Start Docker Desktop app
-#      if: runner.os == 'macOS'
-#      shell: bash
-#      run: |
-#        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
-#        echo "Docker starting..."
+    - name: Start Docker Desktop app
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
+        echo "Docker starting..."
 
     - name: Download appcast
       if: runner.os == 'Linux'
