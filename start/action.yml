@@ -14,6 +14,11 @@ runs:
       run: |
         echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
 
+    - name: Reinstall qemu on macOS
+      if: runner.os == 'macOS'
+      shell: bash
+      run: brew install --reinstall qemu
+
     - name: Get Date
       if: runner.os == 'macOS'
       id: get-date
