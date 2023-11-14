@@ -179,16 +179,19 @@ runs:
         until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
         echo "Docker started and ready"
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+#    - name: Setup tmate session
+#      uses: mxschmitt/action-tmate@v3
 #
-#    - name: Wait for Docker to be up and running
-#      shell: bash
-#      run: |
+    - name: Wait for Docker to be up and running
+      shell: bash
+      run: |
+        sleep 30
+        docker ps
 #        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
 #        echo "Docker started and ready"
 #        docker version
 
-#    - name: Gather Diagnostics
-#      shell: bash
-#      run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
+    - name: Gather Diagnostics
+      shell: bash
+      if: ${{ failure() }}
+      run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose gather -upload
