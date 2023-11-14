@@ -131,6 +131,7 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: |
+        cat  /proc/cpuinfo
         egrep '(vmx|svm)' /proc/cpuinfo
 
     # https://github.blog/changelog/2023-02-23-hardware-accelerated-android-virtualization-on-actions-windows-and-linux-larger-hosted-runners/
