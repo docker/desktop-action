@@ -173,6 +173,7 @@ runs:
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
+        sleep 10
         until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
         echo "Docker started and ready"
         docker version
