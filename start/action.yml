@@ -79,11 +79,11 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        sudo mkdir /Library/PrivilegedHelperTools
-        sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
-        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
+        # sudo mkdir /Library/PrivilegedHelperTools
+        # sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
+        # sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
         echo "app installed"
-        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
+        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --accept-license
         echo "Docker starting..."
 
     - name: Download appcast
@@ -173,7 +173,8 @@ runs:
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
-        sleep 10
-        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
+        for i in $(seq 1 10); do /Applications/Docker.app/Contents/Resources/bin/docker ps && break || sleep 1; done
+
         echo "Docker started and ready"
-        docker version
+
+        docker version || /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check
