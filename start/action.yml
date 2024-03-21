@@ -81,10 +81,10 @@ runs:
       run: |
         sudo mkdir /Library/PrivilegedHelperTools
         sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
-        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
+        # sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
         echo "app installed"
-        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --accept-license
-        echo "Docker starting..."
+        # /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --accept-license
+        # echo "Docker starting..."
 
     - name: Download appcast
       if: runner.os == 'Linux'
