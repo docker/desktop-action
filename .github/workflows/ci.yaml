@@ -11,12 +11,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu22_16cores_64gb, macos-latest]
-        build-url:
-          [
-            "latest",
-            "https://desktop.docker.com/linux/main/amd64/122432/docker-desktop-4.24.0-amd64.deb",
-          ]
+        os: [macos-latest]
+        build-url: ["latest"]
     #timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -38,4 +34,4 @@ jobs:
 
       - name: Gather Diagnostics
         if: ${{ failure() }}
-        run: /opt/docker-desktop/bin/com.docker.diagnose gather -upload
+        run: /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check

@@ -79,9 +79,9 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        # sudo mkdir /Library/PrivilegedHelperTools
-        # sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
-        # sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
+        sudo mkdir /Library/PrivilegedHelperTools
+        sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
+        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
         echo "app installed"
         /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --accept-license
         echo "Docker starting..."
@@ -173,7 +173,7 @@ runs:
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
-        for i in $(seq 1 10); do /Applications/Docker.app/Contents/Resources/bin/docker ps && break || sleep 1; done
+        #  until echo "running docker version" ; /Applications/Docker.app/Contents/Resources/bin/docker version; do echo "sleep 10 s and retry"; sleep 10;echo "sleep ended"; done
 
         echo "Docker started and ready"
 
