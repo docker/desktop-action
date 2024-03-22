@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13-large]
+        os: [macos-13]
         build-url: ["latest"]
     #timeout-minutes: 20
     steps:
