@@ -59,7 +59,7 @@ runs:
         sw_vers
         mkdir ./temp
         mkdir ./mount
-        wget -q -O ./temp/DockerDesktop.dmg https://desktop-stage.docker.com/mac/main/amd64/Docker.dmg
+        wget -q -O ./temp/DockerDesktop.dmg https://desktop.docker.com/mac/main/amd64/118664/Docker.dmg
         /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
         echo "dmg mounted"
         sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license  --user runner
@@ -81,7 +81,7 @@ runs:
       run: |
         # sudo mkdir /Library/PrivilegedHelperTools
         # sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
-        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
+        # sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
         echo "app installed"
         /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry --telemetry
         # echo "Docker starting..."
@@ -173,7 +173,7 @@ runs:
     - name: Wait for Docker to be up and running
       shell: bash
       run: |
-        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
+        until /Applications/Docker.app/Contents/Resources/bin/docker ps; do echo "docker not ready, sleep 10 s"; sleep 10 ; echo "done sleeping, retrying..." ; done
 
         echo "Docker started and ready"
 
