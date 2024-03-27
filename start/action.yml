@@ -8,12 +8,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Bloc calls to segment.io
-      id: redirect-segment
-      shell: bash
-      run: |
-        echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
-
     - name: Install macOS Docker Desktop dmg
       if: runner.os == 'macOS'
       shell: bash
