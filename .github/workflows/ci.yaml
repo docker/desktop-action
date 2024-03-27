@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-docker-desktop:
+    name: Test Docker Desktop installation and start
+    runs-on: macos-13
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Desktop
+        uses: ./start
+        timeout-minutes: 5
+
+      - name: Docker Desktop version
+        run: docker version >> $GITHUB_STEP_SUMMARY
+
+      - name: Docker Desktop info
+        run: docker info
+
+      - name: Gather Diagnostics
+        if: ${{ failure() }}
+        run: /opt/docker-desktop/bin/com.docker.diagnose gather -upload
