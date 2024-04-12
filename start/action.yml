@@ -79,7 +79,7 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        sudo mkdir /Library/PrivilegedHelperTools
+        sudo mkdir -p /Library/PrivilegedHelperTools
         sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
         sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
         echo "app installed"
