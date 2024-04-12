@@ -5,6 +5,10 @@ inputs:
     description: "Docker Desktop build url to use for installation"
     required: false
     default: "latest"
+  username:
+    description: "username on the node"
+    required: false
+    default: "runner"
 runs:
   using: "composite"
   steps:
@@ -80,7 +84,7 @@ runs:
       shell: bash
       run: |
         sudo mkdir -p /Library/PrivilegedHelperTools
-        sudo /Applications/Docker.app/Contents/MacOS/install config --user runner
+        sudo /Applications/Docker.app/Contents/MacOS/install config --user ${{inputs.username}}
         sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
         echo "app installed"
         /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
