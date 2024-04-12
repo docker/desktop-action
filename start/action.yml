@@ -59,7 +59,7 @@ runs:
         sw_vers
         mkdir ./temp
         mkdir ./mount
-        wget -q -O ./temp/DockerDesktop.dmg https://desktop.docker.com/mac/main/amd64/Docker.dmg
+        curl -o ./temp/DockerDesktop.dmg https://desktop.docker.com/mac/main/amd64/Docker.dmg
         /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
         echo "dmg mounted"
         sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license
