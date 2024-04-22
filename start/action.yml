@@ -9,6 +9,10 @@ inputs:
     description: "username on the node"
     required: false
     default: "runner"
+  env:
+    description: "env variables to pass when running Desktop, as a JSON string"
+    required: false
+    default: "{}"
 runs:
   using: "composite"
   steps:
@@ -59,6 +63,7 @@ runs:
     - name: Install macOS Docker Desktop dmg
       if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit != 'true'
       shell: bash
+      env: ${{fromJson(inputs.env)}}
       run: |
         sw_vers
         mkdir ./temp
@@ -88,6 +93,7 @@ runs:
     - name: Install macOS Docker Desktop app
       if: runner.os == 'macOS'
       shell: bash
+      env: ${{fromJson(inputs.env)}}
       run: |
         sudo mkdir -p /Library/PrivilegedHelperTools
         sudo /Applications/Docker.app/Contents/MacOS/install config --user ${{inputs.username}}
@@ -155,6 +161,7 @@ runs:
     - name: Install and Run Docker Desktop
       if: runner.os == 'Linux'
       shell: bash
+      env: ${{fromJson(inputs.env)}}
       run: |
         sudo add-apt-repository universe
         sudo apt update -y
@@ -175,10 +182,7 @@ runs:
         docker context create desktop-linux --docker host=unix://${HOME}/.docker/desktop/docker.sock --description "Docker Desktop"
         docker context use desktop-linux
 
-        systemctl --user start docker-desktop
-
-        until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
-        echo "Docker started and ready"
+        /opt/docker-desktop/bin/com.docker.backend &
 
     - name: Wait for Docker to be up and running
       shell: bash
