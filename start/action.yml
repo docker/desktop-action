@@ -163,6 +163,10 @@ runs:
       shell: bash
       env: ${{fromJson(inputs.env)}}
       run: |
+        # tmp fix to work around unsigned MS packages
+        # cf https://github.com/microsoft/linux-package-repositories/issues/130
+        sudo rm /etc/apt/sources.list.d/microsoft-prod.list
+
         sudo add-apt-repository universe
         sudo apt update -y
         sudo apt-get install ca-certificates curl gnupg
@@ -174,7 +178,7 @@ runs:
           "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
           sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         sudo apt update -y
-        sudo apt remove moby-cli moby-compose moby-buildx
+        # sudo apt remove moby-cli moby-compose moby-buildx
         sudo apt install qemu-kvm
         sudo apt install ~/.downloads/docker-desktop.deb qemu-kvm
         mkdir -p ~/.docker/desktop
