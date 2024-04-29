@@ -106,7 +106,7 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        curl https://desktop.docker.com/linux/main/amd64/appcast.xml -o appcast.xml
+        curl https://desktop.docker.com/linux/main/amd64/appcast.xml -f -o appcast.xml
 
     - name: Get Docker Desktop latest build url
       if: runner.os == 'Linux' && inputs.docker-desktop-build-url == 'latest'
