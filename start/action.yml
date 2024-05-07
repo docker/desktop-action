@@ -22,46 +22,8 @@ runs:
       run: |
         echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
 
-    - name: Get Date
-      if: runner.os == 'macOS'
-      id: get-date
-      run: |
-        echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-      shell: bash
-
-    - name: Get macOS Docker app cache
-      id: cache-docker-desktop-app
-      if: runner.os == 'macOS'
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-docker-desktop-app
-      with:
-        path: /Applications/Docker.app
-        key: docker-desktop-app-mac-amd64-${{ steps.get-date.outputs.date }}
-
-    - name: Get macOS Docker install settings cache
-      id: cache-docker-desktop-install-settings
-      if: runner.os == 'macOS'
-      uses: actions/cache@v3
-      env:
-        cache-name: cache-docker-desktop-install-settings
-      with:
-        path: ./cache/desktopInstallSettings/
-        key: docker-desktop-install-settings-mac-${{ steps.get-date.outputs.date }}
-
-    - name: Copy macOS Desktop install settings in /Library
-      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit == 'true'
-      shell: bash
-      run: |
-        echo "ls ./cache/desktopInstallSettings/"
-        ls ./cache/desktopInstallSettings/
-        sudo mkdir -p "/Library/Application Support/com.docker.docker"
-        sudo cp ./cache/desktopInstallSettings/* "/Library/Application Support/com.docker.docker/"
-        echo "/Library/Application Support/com.docker.docker/"
-        ls "/Library/Application Support/com.docker.docker/"
-
     - name: Install macOS Docker Desktop dmg
-      if: runner.os == 'macOS' && steps.cache-docker-desktop-install-settings.outputs.cache-hit != 'true'
+      if: runner.os == 'macOS'
       shell: bash
       env: ${{fromJson(inputs.env)}}
       run: |
@@ -74,7 +36,7 @@ runs:
           buildUrl="https://desktop.docker.com/mac/main/amd64/Docker.dmg"
         fi
 
-        curl -o ./temp/DockerDesktop.dmg $buildUrl
+        curl --fail -o ./temp/DockerDesktop.dmg $buildUrl
         /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
         echo "dmg mounted"
         sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license
@@ -106,7 +68,7 @@ runs:
       if: runner.os == 'Linux'
       shell: bash
       run: |
-        curl https://desktop.docker.com/linux/main/amd64/appcast.xml -f -o appcast.xml
+        curl https://desktop.docker.com/linux/main/amd64/appcast.xml --fail -o appcast.xml
 
     - name: Get Docker Desktop latest build url
       if: runner.os == 'Linux' && inputs.docker-desktop-build-url == 'latest'
@@ -141,7 +103,7 @@ runs:
       shell: bash
       run: |
         mkdir -p ~/.downloads
-        curl -sSL ${{ steps.get-build-url.outputs.build-url }} > ~/.downloads/docker-desktop.deb
+        curl --fail -sSL ${{ steps.get-build-url.outputs.build-url }} > ~/.downloads/docker-desktop.deb
 
     - name: Check for CPU with VM support
       if: runner.os == 'Linux'
