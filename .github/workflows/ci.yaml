@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu22_8cores_32gb] #, macos-latest ]
+        os: [ubuntu-latest] #, macos-latest ]
         build-url:
           [
             "latest",
