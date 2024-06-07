@@ -20,7 +20,8 @@ runs:
       id: redirect-segment
       shell: bash
       run: |
-        echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
+        cat /etc/hosts | grep '127.0.0.2 api.segment.io' || echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
+        cat /etc/hosts | grep '127.0.0.2 api.segment.io' # Ensure the segment line is there
 
     - name: Install macOS Docker Desktop dmg
       if: runner.os == 'macOS'
