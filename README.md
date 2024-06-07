@@ -17,10 +17,9 @@ By default, the action downloads the last version of Docker Desktop. But you can
 jobs:
   test-docker-desktop:
     name: Test Docker Desktop installation and start
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ ubuntu-latest ]
         build-url: [ "latest", "https://desktop.docker.com/linux/main/amd64/122432/docker-desktop-4.24.0-amd64.deb" ]
 
     steps:
