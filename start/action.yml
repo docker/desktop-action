@@ -145,7 +145,7 @@ runs:
         docker context create desktop-linux --docker host=unix://${HOME}/.docker/desktop/docker.sock --description "Docker Desktop"
         docker context use desktop-linux
 
-        /opt/docker-desktop/bin/com.docker.backend &
+        /opt/docker-desktop/bin/com.docker.backend --unattended &
 
     - name: Wait for Docker to be up and running
       shell: bash
