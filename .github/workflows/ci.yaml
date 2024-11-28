@@ -15,7 +15,7 @@ jobs:
         build-url:
           [
             "latest",
-            "https://desktop-stage.docker.com/linux/main/amd64/152519/docker-desktop-4.32.0-amd64.deb",
+            "https://desktop.docker.com/linux/main/amd64/docker-desktop-amd64.deb",
           ]
     timeout-minutes: 20
     steps:
