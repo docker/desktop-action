@@ -37,10 +37,11 @@ runs:
           buildUrl="https://desktop.docker.com/mac/main/amd64/Docker.dmg"
         fi
 
+        sudo mkdir -p /Library/PrivilegedHelperTools
         curl --fail -o ./temp/DockerDesktop.dmg $buildUrl
         /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
         echo "dmg mounted"
-        sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license
+        sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license --user ${{inputs.username}}
         echo "dmg installed"
 
         echo "ls /Library/Application Support/com.docker.docker"
@@ -58,11 +59,7 @@ runs:
       shell: bash
       env: ${{fromJson(inputs.env)}}
       run: |
-        sudo mkdir -p /Library/PrivilegedHelperTools
-        sudo /Applications/Docker.app/Contents/MacOS/install config --user ${{inputs.username}}
-        sudo /Applications/Docker.app/Contents/MacOS/install vmnetd
-        echo "app installed"
-        /usr/bin/open /Applications/Docker.app --args --unattended --add-host-docker-internal-registry
+        /usr/bin/open /Applications/Docker.app --args --unattended --telemetry
         echo "Docker starting..."
 
     - name: Download appcast
