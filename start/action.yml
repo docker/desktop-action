@@ -54,6 +54,27 @@ runs:
         /usr/bin/hdiutil detach ./mount/desktop
         echo "dmg unmounted"
 
+    - name: Disable Rosetta in Docker Desktop settings
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        SETTINGS_FILE="$HOME/Library/Group Containers/group.com.docker/settings-store.json"
+        SETTINGS_DIR=$(dirname "$SETTINGS_FILE")
+
+        # Ensure the directory exists
+        mkdir -p "$SETTINGS_DIR"
+
+        if [ -f "$SETTINGS_FILE" ]; then
+          # Use jq to set UseVirtualizationFrameworkRosetta to false
+          jq '.UseVirtualizationFrameworkRosetta = false' "$SETTINGS_FILE" > "$SETTINGS_FILE.tmp"
+          mv "$SETTINGS_FILE.tmp" "$SETTINGS_FILE"
+          echo "Disabled Rosetta in Docker Desktop settings"
+        else
+          # Create new settings file with the key set to false
+          echo '{"UseVirtualizationFrameworkRosetta": false}' > "$SETTINGS_FILE"
+          echo "Created settings file with Rosetta disabled"
+        fi
+
     - name: Install macOS Docker Desktop app
       if: runner.os == 'macOS'
       shell: bash
