@@ -70,7 +70,7 @@ runs:
 
     - name: Get Docker Desktop latest build url
       if: runner.os == 'Linux' && inputs.docker-desktop-build-url == 'latest'
-      uses: mavrosxristoforos/get-xml-info@1.1.1
+      uses: mavrosxristoforos/get-xml-info@749cc7ecda18372226181a390717a4cab5439eb5 # v1.1.1
       id: get-latest-build-url
       with:
         xml-file: appcast.xml
@@ -90,7 +90,7 @@ runs:
     - name: Cache Docker Desktop packages
       if: runner.os == 'Linux'
       id: cache-docker-desktop
-      uses: actions/cache@v3
+      uses: actions/cache@6f8efc29b200d32929f49075959781ed54ec270c # v3
       with:
         key: "docker-desktop-4.25.0-amd64"
         path: |
