@@ -157,7 +157,7 @@ runs:
             cat ~/.docker/desktop/log/vm/*.log 2>/dev/null || true
             exit 1
           fi
-          echo "docker not ready, sleep 10 s and try again"
+          echo "docker not ready, sleep 10s and try again"
           sleep 10
         done
         echo "Docker started and ready"
