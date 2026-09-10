@@ -51,7 +51,22 @@ runs:
         echo "ls ./cache/desktopInstallSettings/"
         ls ./cache/desktopInstallSettings/ || true
 
-        /usr/bin/hdiutil detach ./mount/desktop
+        # The volume is often still busy right after install, and a bare
+        # detach then fails the step with exit 16 even though Desktop
+        # installed fine. Retry, then force, and let the caller's cleanup
+        # be the backstop rather than failing a successful install.
+        detached=false
+        for attempt in 1 2 3 4 5; do
+          if /usr/bin/hdiutil detach ./mount/desktop; then
+            detached=true
+            break
+          fi
+          sleep $(( attempt * 2 ))
+        done
+        if [ "${detached}" != true ]; then
+          /usr/bin/hdiutil detach -force ./mount/desktop || \
+            echo "could not detach ./mount/desktop; leaving it mounted"
+        fi
         echo "dmg unmounted"
 
     - name: Install macOS Docker Desktop app
