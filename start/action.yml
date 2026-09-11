@@ -62,30 +62,31 @@ runs:
         /usr/bin/open /Applications/Docker.app --args --unattended --telemetry
         echo "Docker starting..."
 
-    - name: Download appcast
-      if: runner.os == 'Linux'
-      shell: bash
-      run: |
-        curl https://desktop.docker.com/linux/main/amd64/appcast.xml --fail -o appcast.xml
-
-    - name: Get Docker Desktop latest build url
-      if: runner.os == 'Linux' && inputs.docker-desktop-build-url == 'latest'
-      uses: mavrosxristoforos/get-xml-info@749cc7ecda18372226181a390717a4cab5439eb5 # v1.1.1
-      id: get-latest-build-url
-      with:
-        xml-file: appcast.xml
-        xpath: //channel/link
-
-    - name: Define the build URL to use
+    - name: Resolve the build URL
       if: runner.os == 'Linux'
       id: get-build-url
       shell: bash
+      env:
+        BUILD_URL: ${{ inputs.docker-desktop-build-url }}
       run: |
-        buildUrl=${{ inputs.docker-desktop-build-url }}
-        if [[ "$buildUrl" == "latest" ]]; then
-          buildUrl=${{ steps.get-latest-build-url.outputs.info }}
+        set -euo pipefail
+        buildUrl="${BUILD_URL}"
+        if [[ "${buildUrl}" == "latest" ]]; then
+          # Highest build number among the items at full visibility. The
+          # channel-level pointer is not the newest build, document order is
+          # not a reliable proxy for recency, and an item still rolling out
+          # is not yet the latest release.
+          buildUrl="$(curl -fsS https://desktop.docker.com/linux/main/amd64/appcast.json |
+            jq -r '.Items
+                   | map(select(.Visibility == "100"))
+                   | if length == 0 then empty else max_by(.BuildNumber | tonumber) end
+                   | .Artifacts[] | select(.Type == "deb") | .URL')"
+          if [[ -z "${buildUrl}" ]]; then
+            echo "no appcast item at full visibility" >&2
+            exit 1
+          fi
         fi
-        echo "build-url=$buildUrl" >> $GITHUB_OUTPUT
+        echo "build-url=${buildUrl}" >> "${GITHUB_OUTPUT}"
 
     - name: Cache Docker Desktop packages
       if: runner.os == 'Linux'
