@@ -151,8 +151,10 @@ runs:
           sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
         sudo apt update -y
         sudo apt remove moby-cli moby-compose moby-buildx
-        sudo apt install qemu-kvm
-        sudo apt install ~/.downloads/docker-desktop.deb qemu-kvm
+        # The package's own Depends pulls in qemu-system-x86. qemu-kvm is a
+        # virtual package on Ubuntu 26.04 with two providers, so naming it
+        # fails with "no installation candidate".
+        sudo apt install ~/.downloads/docker-desktop.deb
         mkdir -p ~/.docker/desktop
         echo '{"settingsVersion": 30, "licenseTermsVersion": 2}' > ~/.docker/desktop/settings.json
         docker context create desktop-linux --docker host=unix://${HOME}/.docker/desktop/docker.sock --description "Docker Desktop"
